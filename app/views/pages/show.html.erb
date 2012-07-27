@@ -1,0 +1,75 @@
+<div class="hero-unit">
+<p>
+<h1 id="disp">25:00</h1>
+</p>
+<div class="progress">
+  <div class="bar" style="width: 60%;" id="pgs"></div>
+</div>
+<a class="btn btn-primary btn-large" id="start-btn">Start</a>
+<a class="btn btn-large" id="reset-btn">Reset</a>
+
+
+</div>
+
+<audio id="audio-player">
+<source src="/alert.mp3" />
+</audio>
+
+<script>
+audio = new Audio("");
+audio.autoplay = false;
+audio.src = "/alert.mp3";
+
+count = 60 * 25;
+timer = null;
+reader = null;
+$(document).ready( function() {
+  $("#start-btn").click(function(e){
+    //audio.play();
+    if(!timer){
+      clearInterval(timer);
+      clearTimeout(timer);
+    }
+    count = 60 * 25;
+    timer = setInterval("countTimer()",1000);
+  });
+  $.get('/<%= @channel %>/set/1500',function(){});
+  reader = setInterval("countReader()",500);
+});
+
+function countReader(){
+  $.get('/<%= @channel %>/get/',function(data){
+    c = data.count;
+    h = Math.floor(c / 60);
+    s = c % 60;
+
+    h = ("0" + h ).slice(-2);
+    s = ("0" + s ).slice(-2);
+
+    disp = h + ":" + s;
+    $("#disp").html(disp);   
+    if(c == 0){
+      audio.play();
+    }
+    if(c == 1499){
+      audio.play();
+    }
+    p = Math.floor((c / 1500) * 100);
+    p = 100 - p;
+
+    $('#pgs').css({width: p + '%'});
+  });
+}
+
+function countTimer(){
+  if(count<=0){
+    return;
+  }
+  count = count -1;
+ $.get('/<%= @channel %>/set/' + count,function(){});
+}
+
+
+
+
+</script>
